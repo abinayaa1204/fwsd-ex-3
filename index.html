@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeavePlanner</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #eef1f6;
+    margin: 0;
+    color: #222;
+  }
+
+  /* Layout: sidebar on the left, content on the right */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  .sidebar {
+    width: 240px;
+    background-color: #1e2a44;
+    color: white;
+    padding: 20px 15px;
+    flex-shrink: 0;
+  }
+  .sidebar h1 {
+    margin: 0 0 20px 0;
+    font-size: 22px;
+  }
+  .sidebar label {
+    font-size: 12px;
+    color: #aab4cc;
+    margin-top: 0;
+  }
+  .sidebar select {
+    margin-bottom: 20px;
+  }
+  .nav-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background-color: transparent;
+    color: #dbe2f2;
+    border: none;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .nav-btn:hover {
+    background-color: #2d3b5c;
+  }
+  .nav-btn.active {
+    background-color: #0f9d8a;
+    color: white;
+  }
+  .badge {
+    background-color: #f5a623;
+    color: #222;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 6px;
+  }
+
+  .main {
+    flex: 1;
+    padding: 25px;
+    min-width: 0;
+  }
+  .main h2 {
+    margin-top: 0;
+  }
+
+  /* White panels */
+  .panel {
+    background-color: white;
+    border: 1px solid #d5dbe8;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+
+  /* Balance cards */
+  .balance-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .balance-card {
+    background-color: white;
+    border: 1px solid #d5dbe8;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .balance-card .type {
+    font-weight: bold;
+    color: #1e2a44;
+  }
+  .balance-card .left {
+    font-size: 30px;
+    font-weight: bold;
+    color: #0f9d8a;
+    margin: 6px 0;
+  }
+  .balance-card .left small {
+    font-size: 14px;
+    color: #666;
+    font-weight: normal;
+  }
+  .bar {
+    display: flex;
+    height: 10px;
+    background-color: #e3e8f2;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .bar .used {
+    background-color: #0f9d8a;
+  }
+  .bar .pend {
+    background-color: #f5a623;
+  }
+  .balance-card .note {
+    font-size: 12px;
+    color: #666;
+  }
+
+  /* Small stat boxes */
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+  }
+  .stat-box {
+    background-color: white;
+    border: 1px solid #d5dbe8;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-box .number {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .stat-box.s-Pending .number {
+    color: #d98a00;
+  }
+  .stat-box.s-Approved .number {
+    color: #0f9d8a;
+  }
+  .stat-box.s-Rejected .number {
+    color: #d93a3a;
+  }
+
+  /* Form */
+  .form-box {
+    max-width: 520px;
+  }
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 9px;
+    margin-top: 4px;
+    font-size: 14px;
+    border: 1px solid #bcc5d8;
+    border-radius: 6px;
+  }
+  .check-line {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  .check-line input {
+    width: auto;
+    margin-right: 6px;
+  }
+  .row-two {
+    display: flex;
+    gap: 10px;
+  }
+  .row-two div {
+    flex: 1;
+  }
+  .error {
+    color: #d93a3a;
+    font-size: 13px;
+    min-height: 4px;
+  }
+  .preview {
+    background-color: #e6f6f3;
+    border: 1px solid #b6e3db;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 12px;
+    display: none;
+  }
+  .main-btn {
+    width: 100%;
+    background-color: #0f9d8a;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 15px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .main-btn:hover {
+    background-color: #0b7d6e;
+  }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background-color: #1e2a44;
+    color: white;
+    text-align: left;
+    padding: 10px;
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px;
+    border-bottom: 1px solid #e3e8f2;
+    vertical-align: middle;
+  }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    white-space: nowrap;
+  }
+  .tag.Pending {
+    background-color: #d98a00;
+  }
+  .tag.Approved {
+    background-color: #0f9d8a;
+  }
+  .tag.Rejected {
+    background-color: #d93a3a;
+  }
+  .remark-text {
+    font-size: 12px;
+    color: #666;
+  }
+  .approve-btn {
+    background-color: #0f9d8a;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .reject-btn {
+    background-color: #d93a3a;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .cancel-btn {
+    background-color: #777;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .remark-input {
+    width: 150px;
+    margin: 0;
+    padding: 6px;
+  }
+  .empty-text {
+    color: #666;
+    padding: 15px 0;
+  }
+
+  /* Calendar */
+  .cal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .cal-top h3 {
+    margin: 0;
+  }
+  .cal-top button {
+    background-color: #1e2a44;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-head {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 6px 0;
+    color: #1e2a44;
+  }
+  .cal-cell {
+    background-color: white;
+    border: 1px solid #d5dbe8;
+    border-radius: 6px;
+    min-height: 82px;
+    padding: 4px;
+    overflow: hidden;
+  }
+  .cal-cell.sunday {
+    background-color: #f3f4f8;
+  }
+  .cal-cell.today {
+    border: 2px solid #0f9d8a;
+  }
+  .cal-cell.blank {
+    background-color: transparent;
+    border: none;
+  }
+  .cal-num {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+  }
+  .cal-tag {
+    font-size: 11px;
+    color: white;
+    border-radius: 4px;
+    padding: 1px 4px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-tag.Approved {
+    background-color: #0f9d8a;
+  }
+  .cal-tag.Pending {
+    background-color: #d98a00;
+  }
+  .cal-more {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .legend {
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .legend span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin: 0 4px 0 12px;
+    vertical-align: middle;
+  }
+
+  /* Popup */
+  .popup-bg {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow: auto;
+    z-index: 10;
+  }
+  .popup-box {
+    background-color: white;
+    width: 360px;
+    max-width: 90%;
+    margin: 120px auto;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .icon {
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    font-size: 38px;
+    color: white;
+    background-color: #0f9d8a;
+    border-radius: 50%;
+    margin: 0 auto 10px auto;
+  }
+  .icon.bad {
+    background-color: #d93a3a;
+  }
+  .done-btn {
+    background-color: #1e2a44;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* Mobile */
+  @media (max-width: 800px) {
+    .layout {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+    }
+    .nav-btn {
+      display: inline-block;
+      width: auto;
+      margin-right: 4px;
+    }
+    .main {
+      padding: 15px;
+    }
+    .balance-row, .stat-row {
+      grid-template-columns: 1fr;
+    }
+    .cal-cell {
+      min-height: 60px;
+    }
+    .cal-tag {
+      font-size: 9px;
+    }
+    .row-two {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- ================= SIDEBAR ================= -->
+  <div class="sidebar">
+    <h1>LeavePlanner</h1>
+
+    <label>Logged in as</label>
+    <select id="empSelect" onchange="refreshAll()"></select>
+
+    <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-btn" id="nav-apply" onclick="showPage('apply')">Apply Leave</button>
+    <button class="nav-btn" id="nav-history" onclick="showPage('history')">My Leave History</button>
+    <button class="nav-btn" id="nav-approvals" onclick="showPage('approvals')">HR Approvals<span class="badge" id="badgeCount">0</span></button>
+    <button class="nav-btn" id="nav-calendar" onclick="showPage('calendar')">Team Calendar</button>
+  </div>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard">
+      <h2 id="welcomeText">Dashboard</h2>
+      <div class="balance-row" id="balanceCards"></div>
+
+      <h3>My Requests</h3>
+      <div class="stat-row">
+        <div class="stat-box s-Pending"><div class="number" id="cntPending">0</div>Pending</div>
+        <div class="stat-box s-Approved"><div class="number" id="cntApproved">0</div>Approved</div>
+        <div class="stat-box s-Rejected"><div class="number" id="cntRejected">0</div>Rejected</div>
+      </div>
+    </div>
+
+    <!-- APPLY LEAVE -->
+    <div id="page-apply" style="display:none;">
+      <h2>Apply for Leave</h2>
+      <div class="panel form-box">
+
+        <label>Leave Type</label>
+        <select id="leaveType" onchange="updatePreview()">
+          <option value="Casual Leave">Casual Leave</option>
+          <option value="Sick Leave">Sick Leave</option>
+          <option value="Annual Leave">Annual Leave</option>
+        </select>
+
+        <div class="row-two">
+          <div>
+            <label>From Date</label>
+            <input type="date" id="fromDate" onchange="updatePreview()">
+            <div class="error" id="errFrom"></div>
+          </div>
+          <div>
+            <label>To Date</label>
+            <input type="date" id="toDate" onchange="updatePreview()">
+            <div class="error" id="errTo"></div>
+          </div>
+        </div>
+
+        <label class="check-line">
+          <input type="checkbox" id="halfDay" onchange="updatePreview()"> Half day (only when From and To dates are the same)
+        </label>
+
+        <div class="preview" id="preview"></div>
+
+        <label>Reason</label>
+        <textarea id="reason" rows="3"></textarea>
+        <div class="error" id="errReason"></div>
+
+        <div class="error" id="errGeneral"></div>
+        <button class="main-btn" onclick="applyLeave()">Submit Leave Request</button>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="page-history" style="display:none;">
+      <h2>My Leave History</h2>
+      <div class="panel">
+        <div class="table-wrap" id="historyTable"></div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div id="page-approvals" style="display:none;">
+      <h2>HR Approvals</h2>
+      <div class="panel">
+        <p style="margin-top:0;">Pending requests from all employees. Write a remark, then approve or reject.</p>
+        <div class="table-wrap" id="approvalTable"></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="page-calendar" style="display:none;">
+      <h2>Team Calendar</h2>
+      <div class="panel">
+        <div class="cal-top">
+          <button onclick="changeMonth(-1)">&lt; Prev</button>
+          <h3 id="calTitle"></h3>
+          <button onclick="changeMonth(1)">Next &gt;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend">
+          <span style="background-color:#0f9d8a;"></span>Approved
+          <span style="background-color:#d98a00;"></span>Pending
+          <span style="background-color:#f3f4f8;border:1px solid #ccc;"></span>Sunday
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MESSAGE POPUP -->
+<div class="popup-bg" id="msgPopup">
+  <div class="popup-box">
+    <div class="icon" id="msgIcon">&#10003;</div>
+    <h2 id="msgTitle"></h2>
+    <p id="msgText"></p>
+    <button class="done-btn" onclick="closeMsgPopup()">OK</button>
+  </div>
+</div>
+
+<script>
+  // Employees
+  var employees = [
+    { id: "E101", name: "Arun Kumar" },
+    { id: "E102", name: "Priya Devi" },
+    { id: "E103", name: "Karthik R" },
+    { id: "E104", name: "Meena S" }
+  ];
+
+  // Yearly leave limits
+  var leaveTypes = ["Casual Leave", "Sick Leave", "Annual Leave"];
+  var totalDays = { "Casual Leave": 12, "Sick Leave": 10, "Annual Leave": 15 };
+
+  // Sample requests (shown the first time)
+  var defaultLeaves = [
+    { id: 1, empId: "E101", type: "Sick Leave",   from: "2026-11-12", to: "2026-11-13", days: 2, reason: "Fever and doctor visit", status: "Pending",  remark: "" },
+    { id: 2, empId: "E102", type: "Annual Leave", from: "2026-11-20", to: "2026-11-24", days: 4, reason: "Family trip",            status: "Approved", remark: "Enjoy your trip" },
+    { id: 3, empId: "E103", type: "Casual Leave", from: "2026-11-16", to: "2026-11-16", days: 1, reason: "Personal work",          status: "Rejected", remark: "Project deadline that day" },
+    { id: 4, empId: "E104", type: "Casual Leave", from: "2026-11-18", to: "2026-11-19", days: 2, reason: "Cousin wedding",         status: "Pending",  remark: "" },
+    { id: 5, empId: "E101", type: "Annual Leave", from: "2026-10-05", to: "2026-10-09", days: 5, reason: "Home town visit",        status: "Approved", remark: "Approved" }
+  ];
+
+  var leaves = [];
+  var pages = ["dashboard", "apply", "history", "approvals", "calendar"];
+  var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var today = new Date();
+  var calYear = today.getFullYear();
+  var calMonth = today.getMonth();
+
+  // ---------- Saving and loading ----------
+  function loadLeaves() {
+    var saved = null;
+    try {
+      saved = localStorage.getItem("leavePlannerData");
+    } catch (e) {
+      saved = null;
+    }
+    if (saved) {
+      leaves = JSON.parse(saved);
+    } else {
+      leaves = defaultLeaves;
+    }
+  }
+
+  function saveLeaves() {
+    try {
+      localStorage.setItem("leavePlannerData", JSON.stringify(leaves));
+    } catch (e) {
+      // saving not available, ignore
+    }
+  }
+
+  // ---------- Small helper functions ----------
+  function safeText(text) {
+    text = String(text);
+    text = text.replace(/&/g, "&amp;");
+    text = text.replace(/</g, "&lt;");
+    text = text.replace(/>/g, "&gt;");
+    return text;
+  }
+
+  function twoDigits(n) {
+    if (n < 10) {
+      return "0" + n;
+    }
+    return "" + n;
+  }
+
+  function makeDateString(y, m, d) {
+    return y + "-" + twoDigits(m + 1) + "-" + twoDigits(d);
+  }
+
+  function parseDate(str) {
+    var parts = str.split("-");
+    return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  }
+
+  function getEmployee(id) {
+    for (var i = 0; i < employees.length; i++) {
+      if (employees[i].id == id) {
+        return employees[i];
+      }
+    }
+  }
+
+  function currentEmpId() {
+    return document.getElementById("empSelect").value;
+  }
+
+  // Count working days (Sundays are not counted)
+  function countDays(from, to, half) {
+    var d = parseDate(from);
+    var end = parseDate(to);
+    var count = 0;
+    while (d <= end) {
+      if (d.getDay() != 0) {
+        count++;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    if (half == true && from == to && count == 1) {
+      return 0.5;
+    }
+    return count;
+  }
+
+  // Total days of one type for one employee and one status
+  function sumDays(empId, type, status) {
+    var total = 0;
+    for (var i = 0; i < leaves.length; i++) {
+      if (leaves[i].empId == empId && leaves[i].type == type && leaves[i].status == status) {
+        total = total + leaves[i].days;
+      }
+    }
+    return total;
+  }
+
+  // Check if the new dates overlap with an existing leave
+  function hasOverlap(empId, from, to) {
+    for (var i = 0; i < leaves.length; i++) {
+      var l = leaves[i];
+      if (l.empId == empId && l.status != "Rejected") {
+        if (from <= l.to && to >= l.from) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // ---------- Page switching ----------
+  function showPage(name) {
+    for (var i = 0; i < pages.length; i++) {
+      document.getElementById("page-" + pages[i]).style.display = "none";
+      document.getElementById("nav-" + pages[i]).className = "nav-btn";
+    }
+    document.getElementById("page-" + name).style.display = "block";
+    document.getElementById("nav-" + name).className = "nav-btn active";
+    refreshAll();
+  }
+
+  function refreshAll() {
+    showDashboard();
+    showHistory();
+    showApprovals();
+    showCalendar();
+    updatePreview();
+  }
+
+  // ---------- Dashboard ----------
+  function showDashboard() {
+    var empId = currentEmpId();
+    var emp = getEmployee(empId);
+    document.getElementById("welcomeText").innerHTML = "Welcome, " + safeText(emp.name);
+
+    var html = "";
+    for (var i = 0; i < leaveTypes.length; i++) {
+      var type = leaveTypes[i];
+      var total = totalDays[type];
+      var used = sumDays(empId, type, "Approved");
+      var pend = sumDays(empId, type, "Pending");
+      var left = total - used - pend;
+      var usedWidth = (used / total) * 100;
+      var pendWidth = (pend / total) * 100;
+
+      html += '<div class="balance-card">';
+      html += '<div class="type">' + type + '</div>';
+      html += '<div class="left">' + left + ' <small>of ' + total + ' days left</small></div>';
+      html += '<div class="bar"><div class="used" style="width:' + usedWidth + '%"></div><div class="pend" style="width:' + pendWidth + '%"></div></div>';
+      html += '<div class="note">Used: ' + used + ' | Pending: ' + pend + '</div>';
+      html += '</div>';
+    }
+    document.getElementById("balanceCards").innerHTML = html;
+
+    var p = 0;
+    var a = 0;
+    var r = 0;
+    for (var j = 0; j < leaves.length; j++) {
+      if (leaves[j].empId == empId) {
+        if (leaves[j].status == "Pending") { p++; }
+        if (leaves[j].status == "Approved") { a++; }
+        if (leaves[j].status == "Rejected") { r++; }
+      }
+    }
+    document.getElementById("cntPending").innerHTML = p;
+    document.getElementById("cntApproved").innerHTML = a;
+    document.getElementById("cntRejected").innerHTML = r;
+  }
+
+  // ---------- Apply leave ----------
+  function updatePreview() {
+    var box = document.getElementById("preview");
+    var from = document.getElementById("fromDate").value;
+    var to = document.getElementById("toDate").value;
+    var type = document.getElementById("leaveType").value;
+    var half = document.getElementById("halfDay").checked;
+
+    if (from == "" || to == "" || to < from) {
+      box.style.display = "none";
+      return;
+    }
+
+    var days = countDays(from, to, half);
+    var empId = currentEmpId();
+    var left = totalDays[type] - sumDays(empId, type, "Approved") - sumDays(empId, type, "Pending");
+
+    box.style.display = "block";
+    box.innerHTML = "Leave days (Sundays not counted): <b>" + days + "</b><br>" +
+      type + " balance after this request: <b>" + (left - days) + "</b>";
+  }
+
+  function applyLeave() {
+    var empId = currentEmpId();
+    var type = document.getElementById("leaveType").value;
+    var from = document.getElementById("fromDate").value;
+    var to = document.getElementById("toDate").value;
+    var half = document.getElementById("halfDay").checked;
+    var reason = document.getElementById("reason").value;
+    var valid = true;
+
+    document.getElementById("errFrom").innerHTML = "";
+    document.getElementById("errTo").innerHTML = "";
+    document.getElementById("errReason").innerHTML = "";
+    document.getElementById("errGeneral").innerHTML = "";
+
+    if (from == "") {
+      document.getElementById("errFrom").innerHTML = "Choose a start date.";
+      valid = false;
+    }
+    if (to == "") {
+      document.getElementById("errTo").innerHTML = "Choose an end date.";
+      valid = false;
+    }
+    if (from != "" && to != "" && to < from) {
+      document.getElementById("errTo").innerHTML = "End date must be after the start date.";
+      valid = false;
+    }
+    if (reason.length < 5) {
+      document.getElementById("errReason").innerHTML = "Please enter the reason.";
+      valid = false;
+    }
+    if (valid == false) {
+      return;
+    }
+
+    var days = countDays(from, to, half);
+    if (days == 0) {
+      document.getElementById("errGeneral").innerHTML = "The selected dates only include Sundays.";
+      return;
+    }
+    if (hasOverlap(empId, from, to)) {
+      document.getElementById("errGeneral").innerHTML = "You already have a leave request on these dates.";
+      return;
+    }
+    var left = totalDays[type] - sumDays(empId, type, "Approved") - sumDays(empId, type, "Pending");
+    if (days > left) {
+      document.getElementById("errGeneral").innerHTML = "Not enough balance. You have only " + left + " day(s) of " + type + " left.";
+      return;
+    }
+
+    leaves.unshift({
+      id: new Date().getTime(),
+      empId: empId,
+      type: type,
+      from: from,
+      to: to,
+      days: days,
+      reason: reason,
+      status: "Pending",
+      remark: ""
+    });
+    saveLeaves();
+
+    document.getElementById("fromDate").value = "";
+    document.getElementById("toDate").value = "";
+    document.getElementById("reason").value = "";
+    document.getElementById("halfDay").checked = false;
+    refreshAll();
+
+    showMessage("Request Submitted", "Your " + type + " request for " + days + " day(s) is waiting for HR approval.", "good");
+  }
+
+  // ---------- History ----------
+  function showHistory() {
+    var empId = currentEmpId();
+    var rows = "";
+    for (var i = 0; i < leaves.length; i++) {
+      var l = leaves[i];
+      if (l.empId == empId) {
+        rows += "<tr>";
+        rows += "<td>" + l.type + "</td>";
+        rows += "<td>" + l.from + "</td>";
+        rows += "<td>" + l.to + "</td>";
+        rows += "<td>" + l.days + "</td>";
+        rows += "<td>" + safeText(l.reason) + "</td>";
+        rows += '<td><span class="tag ' + l.status + '">' + l.status + "</span>";
+        if (l.remark != "") {
+          rows += '<div class="remark-text">HR: ' + safeText(l.remark) + "</div>";
+        }
+        rows += "</td>";
+        rows += "<td>";
+        if (l.status == "Pending") {
+          rows += '<button class="cancel-btn" onclick="cancelLeave(' + l.id + ')">Cancel</button>';
+        }
+        rows += "</td></tr>";
+      }
+    }
+
+    if (rows == "") {
+      document.getElementById("historyTable").innerHTML = '<div class="empty-text">You have no leave requests yet.</div>';
+      return;
+    }
+    document.getElementById("historyTable").innerHTML =
+      "<table><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr>" + rows + "</table>";
+  }
+
+  function cancelLeave(id) {
+    for (var i = 0; i < leaves.length; i++) {
+      if (leaves[i].id == id) {
+        leaves.splice(i, 1);
+        break;
+      }
+    }
+    saveLeaves();
+    refreshAll();
+    showMessage("Request Cancelled", "Your leave request has been removed.", "good");
+  }
+
+  // ---------- HR approvals ----------
+  function showApprovals() {
+    var rows = "";
+    var count = 0;
+    for (var i = 0; i < leaves.length; i++) {
+      var l = leaves[i];
+      if (l.status == "Pending") {
+        count++;
+        var emp = getEmployee(l.empId);
+        rows += "<tr>";
+        rows += "<td>" + safeText(emp.name) + "<br><small>" + l.empId + "</small></td>";
+        rows += "<td>" + l.type + "</td>";
+        rows += "<td>" + l.from + " to " + l.to + "</td>";
+        rows += "<td>" + l.days + "</td>";
+        rows += "<td>" + safeText(l.reason) + "</td>";
+        rows += '<td><input class="remark-input" type="text" id="remark-' + l.id + '" placeholder="Remark"></td>';
+        rows += '<td><button class="approve-btn" onclick="decide(' + l.id + ', \'Approved\')">Approve</button> ';
+        rows += '<button class="reject-btn" onclick="decide(' + l.id + ', \'Rejected\')">Reject</button></td>';
+        rows += "</tr>";
+      }
+    }
+
+    document.getElementById("badgeCount").innerHTML = count;
+
+    if (count == 0) {
+      document.getElementById("approvalTable").innerHTML = '<div class="empty-text">No pending requests. All done!</div>';
+      return;
+    }
+    document.getElementById("approvalTable").innerHTML =
+      "<table><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Remark</th><th>Action</th></tr>" + rows + "</table>";
+  }
+
+  function decide(id, status) {
+    var remark = document.getElementById("remark-" + id).value;
+    var l = null;
+    for (var i = 0; i < leaves.length; i++) {
+      if (leaves[i].id == id) {
+        l = leaves[i];
+      }
+    }
+
+    if (status == "Rejected" && remark.length < 3) {
+      showMessage("Remark Needed", "Please write a short remark before rejecting a request.", "bad");
+      return;
+    }
+    if (remark == "") {
+      remark = "Approved";
+    }
+
+    l.status = status;
+    l.remark = remark;
+    saveLeaves();
+    refreshAll();
+
+    var emp = getEmployee(l.empId);
+    showMessage("Leave " + status, emp.name + "'s " + l.type + " request has been " + status.toLowerCase() + ".", "good");
+  }
+
+  // ---------- Calendar ----------
+  function changeMonth(step) {
+    calMonth = calMonth + step;
+    if (calMonth < 0) {
+      calMonth = 11;
+      calYear--;
+    }
+    if (calMonth > 11) {
+      calMonth = 0;
+      calYear++;
+    }
+    showCalendar();
+  }
+
+  function showCalendar() {
+    document.getElementById("calTitle").innerHTML = monthNames[calMonth] + " " + calYear;
+
+    var html = "";
+    var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    for (var h = 0; h < 7; h++) {
+      html += '<div class="cal-head">' + dayNames[h] + "</div>";
+    }
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    var todayString = makeDateString(today.getFullYear(), today.getMonth(), today.getDate());
+
+    for (var b = 0; b < firstDay; b++) {
+      html += '<div class="cal-cell blank"></div>';
+    }
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var ds = makeDateString(calYear, calMonth, d);
+      var weekDay = new Date(calYear, calMonth, d).getDay();
+      var cellClass = "cal-cell";
+      if (weekDay == 0) { cellClass += " sunday"; }
+      if (ds == todayString) { cellClass += " today"; }
+
+      var tags = "";
+      var shown = 0;
+      var more = 0;
+      for (var i = 0; i < leaves.length; i++) {
+        var l = leaves[i];
+        if (l.status != "Rejected" && l.from <= ds && ds <= l.to) {
+          if (shown < 2) {
+            var firstName = getEmployee(l.empId).name.split(" ")[0];
+            tags += '<div class="cal-tag ' + l.status + '">' + safeText(firstName) + "</div>";
+            shown++;
+          } else {
+            more++;
+          }
+        }
+      }
+      if (more > 0) {
+        tags += '<div class="cal-more">+' + more + " more</div>";
+      }
+
+      html += '<div class="' + cellClass + '"><div class="cal-num">' + d + "</div>" + tags + "</div>";
+    }
+
+    document.getElementById("calGrid").innerHTML = html;
+  }
+
+  // ---------- Popup ----------
+  function showMessage(title, text, kind) {
+    var icon = document.getElementById("msgIcon");
+    if (kind == "bad") {
+      icon.className = "icon bad";
+      icon.innerHTML = "!";
+    } else {
+      icon.className = "icon";
+      icon.innerHTML = "&#10003;";
+    }
+    document.getElementById("msgTitle").innerHTML = title;
+    document.getElementById("msgText").textContent = text;
+    document.getElementById("msgPopup").style.display = "block";
+  }
+
+  function closeMsgPopup() {
+    document.getElementById("msgPopup").style.display = "none";
+  }
+
+  // ---------- Start ----------
+  function startPage() {
+    var options = "";
+    for (var i = 0; i < employees.length; i++) {
+      options += '<option value="' + employees[i].id + '">' + employees[i].name + " (" + employees[i].id + ")</option>";
+    }
+    document.getElementById("empSelect").innerHTML = options;
+    loadLeaves();
+    refreshAll();
+  }
+
+  startPage();
+</script>
+
+</body>
+</html>
